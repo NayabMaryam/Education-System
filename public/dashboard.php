@@ -8,12 +8,23 @@ $stmt = $pdo->query(
 
 $courses = $stmt->fetchAll();
 ?>
+<?php
+require_once __DIR__ . '/../includes/auth.php';
+require_login();
+
+require_once __DIR__ . '/../includes/db.php';
+
+$stmt = $pdo->query(
+    'SELECT id, title, description FROM courses ORDER BY title'
+);
+$courses = $stmt->fetchAll();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SecureStudy | Student Dashboard</title>
+    <title>StudyBoard | Student Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,5 +68,17 @@ $courses = $stmt->fetchAll();
             ) ?></p>
         </article>
     <?php endforeach; ?>
+        <form method="POST" action="logout.php">
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="<?= htmlspecialchars(
+                csrf_token(),
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>"
+        >
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>
