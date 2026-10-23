@@ -1,10 +1,19 @@
 
 <?php
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
+require_once __DIR__ . '/../includes/mode.php';
 require_once __DIR__ . '/../includes/db.php';
 
+// Vulnerable demonstrations are restricted to the local lab.
+if (is_vulnerable_mode() && !is_local_lab_request()) {
+    http_response_code(403);
+    exit('Vulnerable mode is restricted to the local lab.');
+}
 $message = '';
 $error = '';
 
@@ -209,7 +218,11 @@ function e(string $value): string
                 Posted by <?= e($comment['name']) ?>
                 · <?= e($comment['created_at']) ?>
             </p>
-            <p class="comment-text"><?= e($comment['content']) ?></p>
+            <?php if (is_vulnerable_mode()): ?>
+                <p class="comment-text"><?= $comment['content'] ?></p>
+            <?php else: ?>
+                <p class="comment-text"><?= e($comment['content']) ?></p>
+            <?php endif; ?>
         </article>
     <?php endforeach; ?>
 </main>
