@@ -76,8 +76,8 @@ $courses = $stmt->fetchAll();
     
     <div class="dashboard-card">
         <h2>Course Discussions</h2>
-        <p>View and share comments about your courses.</p>
-        <a href="comments.php">Open Course Discussions</a>
+        <p><a href="search.php">Course Search</a></p>
+        <p><a href="comments.php">Course Discussions</a></p>
     </div>
     
     <section class="mode-panel">
