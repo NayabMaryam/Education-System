@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSRF Test Page</title>
+</head>
+<body>
+    <h1>External Request Test</h1>
+    <p>
+        This page tests whether SecureStudy accepts
+        a comment submission without a CSRF token.
+    </p>
+
+    <form
+        action="http://localhost/Education-System/public/comments.php"
+        method="POST"
+    >
+        <input type="hidden" name="course_id" value="1">
+
+        <input
+            type="hidden"
+            name="content"
+            value="Controlled CSRF test comment"
+        >
+
+        <button type="submit">
+            Send Test Request
+        </button>
+    </form>
+</body>
+</html>

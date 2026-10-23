@@ -23,7 +23,7 @@ $coursesStmt = $pdo->query(
 $courses = $coursesStmt->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf_token()) {
+    if (!is_vulnerable_mode() && !verify_csrf_token()) {
         http_response_code(403);
         $error = 'Invalid request. Please refresh and try again.';
     } else {
