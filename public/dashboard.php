@@ -51,6 +51,13 @@ $courses = $stmt->fetchAll();
 <body>
     <h1>Education Dashboard</h1>
     <p>Welcome to your student dashboard.</p>
+    
+    <div class="dashboard-card">
+        <h2>Course Discussions</h2>
+        <p>View and share comments about your courses.</p>
+        <a href="comments.php">Open Course Discussions</a>
+    </div>
+
     <h2>Available Courses</h2>
 
     <?php foreach ($courses as $course): ?>

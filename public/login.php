@@ -101,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <main class="login-card">
-        <!-- LOGIN FILE CHECK -->
         <h1>StudyBoard</h1>
         <p>Sign in to your student account.</p>
 
@@ -110,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
             </p>
         <?php endif; ?>
-            <!-- MARKER A -->
         <form method="POST" action="login.php">
             <input
                 type="hidden"
@@ -121,7 +119,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'UTF-8'
                 ) ?>"
             >
-            <!-- MARKER B -->
             <label for="email">Email</label>
             <input
                 id="email"
@@ -142,7 +139,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <button type="submit">Login</button>
         </form>
-        <!-- MARKER C -->
+        <p>
+            Don't have an account?
+            <a href="signup.php">Create an account</a>
+        </p>
     </main>
 </body>
 </html>
