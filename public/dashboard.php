@@ -73,7 +73,7 @@ $courses = $stmt->fetchAll();
 <body>
     <h1>Education Dashboard</h1>
     <p>Welcome to your student dashboard.</p>
-    
+    <p><a href="personalized_welcome.php">Personalized Welcome</a></p>
     <div class="dashboard-card">
         <h2>Course Discussions</h2>
         <p><a href="search.php">Course Search</a></p>
