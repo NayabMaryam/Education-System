@@ -1,24 +1,23 @@
 
-<?php
-require_once __DIR__ . '/../includes/db.php';
 
-$stmt = $pdo->query(
-    'SELECT id, title, description FROM courses ORDER BY title'
-);
-
-$courses = $stmt->fetchAll();
-?>
 <?php
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+
 require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/mode.php';
 
 $stmt = $pdo->query(
     'SELECT id, title, description FROM courses ORDER BY title'
 );
+
 $courses = $stmt->fetchAll();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,6 +45,29 @@ $courses = $stmt->fetchAll();
             border-radius: 10px;
             border: 1px solid #dce5e7;
         }
+        
+        .mode-panel {
+            background: white;
+            border: 1px solid #dce5e7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .mode-panel label,
+        .mode-panel select,
+        .mode-panel button {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+
+        .mode-panel select,
+        .mode-panel button {
+            padding: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -57,6 +79,52 @@ $courses = $stmt->fetchAll();
         <p>View and share comments about your courses.</p>
         <a href="comments.php">Open Course Discussions</a>
     </div>
+    
+    <section class="mode-panel">
+        <h2>Security Lab Mode</h2>
+        <p>
+            Current mode:
+            <strong>
+                <?= htmlspecialchars(
+                    ucfirst(get_app_mode()),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+            </strong>
+        </p>
+
+        <form method="POST" action="mode.php">
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?= htmlspecialchars(
+                    csrf_token(),
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>"
+            >
+
+            <label for="app_mode">Choose application mode</label>
+
+            <select id="app_mode" name="app_mode">
+                <option
+                    value="safe"
+                    <?= get_app_mode() === 'safe' ? 'selected' : '' ?>
+                >
+                    Safe Mode
+                </option>
+
+                <option
+                    value="vulnerable"
+                    <?= get_app_mode() === 'vulnerable' ? 'selected' : '' ?>
+                >
+                    Vulnerable Mode
+                </option>
+            </select>
+
+            <button type="submit">Switch Mode</button>
+        </form>
+    </section>
 
     <h2>Available Courses</h2>
 
