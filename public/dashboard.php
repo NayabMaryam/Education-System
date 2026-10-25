@@ -74,14 +74,20 @@ $courses = $stmt->fetchAll();
     <h1>Education Dashboard</h1>
     <p>Welcome to your student dashboard.</p>
     <p><a href="personalized_welcome.php">Personalized Welcome</a></p>
+    
     <div class="dashboard-card">
         <h2>Course Discussions</h2>
         <p><a href="search.php">Course Search</a></p>
         <p><a href="comments.php">Course Discussions</a></p>
     </div>
-    
-    <section class="mode-panel">
-        <h2>Security Lab Mode</h2>
+
+    <div class="dashboard-card">
+        <h2>Security Testing Lab</h2>
+        <p>
+            <a href="sqli.php">SQL Injection Demonstrations</a>
+        </p>
+    </div>
+
         <p>
             Current mode:
             <strong>
