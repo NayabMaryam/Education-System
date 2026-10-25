@@ -81,12 +81,22 @@ $courses = $stmt->fetchAll();
         <p><a href="comments.php">Course Discussions</a></p>
     </div>
 
+    
     <div class="dashboard-card">
         <h2>Security Testing Lab</h2>
+
+        <p>
+            <a href="comment_search.php">Comment Search</a>
+        </p>
+
         <p>
             <a href="sqli.php">SQL Injection Demonstrations</a>
         </p>
     </div>
+
+    
+ 
+
 
         <p>
             Current mode:
