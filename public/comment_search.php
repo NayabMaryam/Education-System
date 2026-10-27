@@ -1,5 +1,7 @@
-
 <?php
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 require_once __DIR__ . '/../includes/auth.php';
 require_login();
 
@@ -18,53 +20,66 @@ $searchType = $_GET['type'] ?? 'keyword';
 $comments = [];
 $error = '';
 
-if (!in_array($searchType, ['keyword', 'id'], true)) {
+if (!in_array($searchType, ['keyword', 'id', 'advanced_lab'], true)) {
     $searchType = 'keyword';
 }
 
 if ($search !== '') {
     try {
-        if (is_vulnerable_mode()) {
+            
+            if (is_vulnerable_mode()) {
 
-            // EASY: string-based SQL injection in keyword search.
-            if ($searchType === 'keyword') {
-                $sql = "SELECT comments.id, comments.content,
-                               comments.created_at, users.name,
-                               courses.title
-                        FROM comments
-                        JOIN users ON users.id = comments.user_id
-                        JOIN courses ON courses.id = comments.course_id
-                        WHERE comments.content LIKE '%$search%'
-                        ORDER BY comments.created_at DESC";
+                if ($searchType === 'advanced_lab') {
+                    // Advanced Lab: synthetic records only.
+                    $stmt = $pdo->prepare(
+                        'SELECT id, content, created_at
+                        FROM dummy_comments
+                        WHERE content LIKE ?
+                        ORDER BY created_at DESC'
+                    );
 
-                // INTERMEDIATE: numeric SQL injection in comment ID lookup.
-            } else {
-                if (!ctype_digit($search)) {
-                    // Allow SQL expressions in Vulnerable Mode for the lab.
-                    $sql = "SELECT comments.id, comments.content,
-                                   comments.created_at, users.name,
-                                   courses.title
-                            FROM comments
-                            JOIN users ON users.id = comments.user_id
-                            JOIN courses ON courses.id = comments.course_id
-                            WHERE comments.id = $search
-                            ORDER BY comments.created_at DESC";
+                    $stmt->execute(['%' . $search . '%']);
+                    $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
                 } else {
-                    $sql = "SELECT comments.id, comments.content,
-                                   comments.created_at, users.name,
-                                   courses.title
-                            FROM comments
-                            JOIN users ON users.id = comments.user_id
-                            JOIN courses ON courses.id = comments.course_id
-                            WHERE comments.id = $search
-                            ORDER BY comments.created_at DESC";
+                    // Existing EASY and INTERMEDIATE demonstrations.
+                    if ($searchType === 'keyword') {
+                        $sql = "SELECT comments.id, comments.content,
+                                    comments.created_at, users.name,
+                                    courses.title
+                                FROM comments
+                                JOIN users ON users.id = comments.user_id
+                                JOIN courses ON courses.id = comments.course_id
+                                WHERE comments.content LIKE '%$search%'
+                                ORDER BY comments.created_at DESC";
+                    } else {
+                        if (!ctype_digit($search)) {
+                            $sql = "SELECT comments.id, comments.content,
+                                        comments.created_at, users.name,
+                                        courses.title
+                                    FROM comments
+                                    JOIN users ON users.id = comments.user_id
+                                    JOIN courses ON courses.id = comments.course_id
+                                    WHERE comments.id = $search
+                                    ORDER BY comments.created_at DESC";
+                        } else {
+                            $sql = "SELECT comments.id, comments.content,
+                                        comments.created_at, users.name,
+                                        courses.title
+                                    FROM comments
+                                    JOIN users ON users.id = comments.user_id
+                                    JOIN courses ON courses.id = comments.course_id
+                                    WHERE comments.id = $search
+                                    ORDER BY comments.created_at DESC";
+                        }
+                    }
+
+                    $stmt = $pdo->query($sql);
+                    $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
-            }
 
-            $stmt = $pdo->query($sql);
-            $comments = $stmt->fetchAll();
+            } else {
 
-        } else {
             // SAFE MODE: use prepared statements.
             if ($searchType === 'id') {
                 if (!ctype_digit($search) || (int) $search < 1) {
@@ -100,10 +115,17 @@ if ($search !== '') {
                 $comments = $stmt->fetchAll();
             }
         }
-    } catch (PDOException $e) {
-        error_log('SecureStudy comment search error: ' . $e->getMessage());
-        $error = 'Search could not be completed. Please check your input.';
-    }
+    
+        } catch (PDOException $e) {
+            error_log('SecureStudy comment search error: ' . $e->getMessage());
+
+            if (is_vulnerable_mode() && is_local_lab_request()) {
+                $error = 'Lab SQL error: ' . $e->getMessage();
+            } else {
+                $error = 'Search could not be completed. Please check your input.';
+            }
+        }
+
 }
 
 function e(string $value): string
@@ -197,10 +219,6 @@ function e(string $value): string
 </head>
 <body>
 <main>
-    
-<
-<body>
-<main>
     <h1>Comment Search</h1>
     <p>
         <strong>Current Mode:</strong>
@@ -225,6 +243,10 @@ function e(string $value): string
                 <option value="id"
                     <?= $searchType === 'id' ? 'selected' : '' ?>>
                     Comment ID
+                </option>
+                <option value="advanced_lab"
+                    <?= $searchType === 'advanced_lab' ? 'selected' : '' ?>>
+                    Advanced SQLi Lab (Synthetic Data)
                 </option>
             </select>
 
@@ -253,19 +275,30 @@ function e(string $value): string
             <p>No matching comments found.</p>
         <?php endif; ?>
 
+        
         <?php foreach ($comments as $comment): ?>
             <article class="comment">
-                <h3><?= e($comment['title']) ?></h3>
-                <p class="meta">
-                    Comment ID: <?= (int) $comment['id'] ?><br>
-                    Posted by <?= e($comment['name']) ?><br>
-                    <?= e($comment['created_at']) ?>
-                </p>
+                <?php if ($searchType === 'advanced_lab'): ?>
+                    <h3>Advanced SQLi Lab — Synthetic Record</h3>
+                    <p class="meta">
+                        Test Record ID: <?= (int) $comment['id'] ?><br>
+                        Created: <?= e($comment['created_at']) ?>
+                    </p>
+                <?php else: ?>
+                    <h3><?= e($comment['title']) ?></h3>
+                    <p class="meta">
+                        Comment ID: <?= (int) $comment['id'] ?><br>
+                        Posted by <?= e($comment['name']) ?><br>
+                        <?= e($comment['created_at']) ?>
+                    </p>
+                <?php endif; ?>
+
                 <p class="comment-text">
                     <?= e($comment['content']) ?>
                 </p>
             </article>
         <?php endforeach; ?>
+
     <?php endif; ?>
 </main>
 </body>
